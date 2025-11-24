@@ -1,5 +1,5 @@
 // src/pages/Productivity/Calendar.jsx
-// ĐÃ LOẠI BỎ TẤT CẢ PACKAGE NGOẠI LAI → CHẠY NGAY 100% KHÔNG LỖI!
+// ĐÃ ĐỒNG BỘ HOÀN TOÀN VỚI TOÀN BỘ APP (Overview, Tasks, Habits, Goals, DailyReview)
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,19 +13,20 @@ export default function CalendarPage() {
     const [events, setEvents] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
-    const [form, setForm] = useState({
-        title: "", time: "", location: "", notes: ""
-    });
+    const [form, setForm] = useState({ title: "", time: "", location: "", notes: "" });
 
-    // Load events
+    // localStorage
     useEffect(() => {
-        const saved = localStorage.getItem("lifeos-calendar-events");
-        if (saved) setEvents(JSON.parse(saved));
+        try {
+            const saved = localStorage.getItem("lifeos-calendar-events");
+            if (saved) setEvents(JSON.parse(saved));
+        } catch (e) { console.error(e); }
     }, []);
 
-    // Save events
     useEffect(() => {
-        localStorage.setItem("lifeos-calendar-events", JSON.stringify(events));
+        try {
+            localStorage.setItem("lifeos-calendar-events", JSON.stringify(events));
+        } catch (e) { console.error(e); }
     }, [events]);
 
     const daysInMonth = () => {
@@ -35,12 +36,7 @@ export default function CalendarPage() {
         const lastDay = new Date(year, month + 1, 0);
         const days = [];
 
-        // Add empty cells for days before month starts
-        for (let i = 0; i < firstDay.getDay(); i++) {
-            days.push(null);
-        }
-
-        // Add actual days
+        for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
         for (let day = 1; day <= lastDay.getDate(); day++) {
             days.push(new Date(year, month, day));
         }
@@ -65,13 +61,17 @@ export default function CalendarPage() {
         setIsModalOpen(true);
     };
 
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingEvent(null);
+    };
+
     const saveEvent = () => {
         if (!form.title.trim()) return;
-
         const eventData = {
             id: editingEvent?.id || Date.now(),
             date: selectedDate.toISOString().split("T")[0],
-            title: form.title,
+            title: form.title.trim(),
             time: form.time,
             location: form.location,
             notes: form.notes
@@ -82,12 +82,12 @@ export default function CalendarPage() {
         } else {
             setEvents([...events, eventData]);
         }
-        setIsModalOpen(false);
+        closeModal();
     };
 
     const deleteEvent = (id) => {
         setEvents(events.filter(e => e.id !== id));
-        setIsModalOpen(false);
+        closeModal();
     };
 
     const getEventsForDate = (date) => {
@@ -103,31 +103,55 @@ export default function CalendarPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:to-indigo-900">
-            <div className="max-w-7xl mx-auto p-6 lg:p-10">
-                {/* Header */}
-                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-                    <h1 className="text-6xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-4">
-                        <Calendar className="w-14 h-14 text-indigo-600" />
-                        Lịch cá nhân
-                    </h1>
-                    <p className="text-2xl text-gray-600 dark:text-gray-400">Quản lý thời gian – Sống có kế hoạch</p>
-                </motion.div>
+        <>
+            {/* HEADER – ĐỒNG BỘ HOÀN TOÀN */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 dark:from-indigo-900 dark:via-blue-900 dark:to-cyan-900 text-white p-8 lg:p-14"
+            >
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center gap-6 mb-4">
+                        <Calendar className="w-16 h-16 lg:w-20 lg:h-20 drop-shadow-2xl" />
+                        <div>
+                            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+                                Lịch cá nhân
+                            </h1>
+                            <p className="text-xl lg:text-2xl opacity-95 mt-3 font-medium">
+                                {events.length} sự kiện trong tháng này
+                            </p>
+                        </div>
+                    </div>
+                    <p className="text-lg lg:text-xl opacity-90 max-w-4xl ml-24">
+                        Quản lý thời gian một cách thông minh – không bao giờ bỏ lỡ điều quan trọng.
+                    </p>
+                </div>
+            </motion.div>
 
-                {/* Month Navigation */}
-                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 mb-8">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-4xl font-bold text-gray-800 dark:text-white">{monthName}</h2>
-                        <div className="flex gap-4">
+            {/* NỘI DUNG CHÍNH – ĐỒNG BỘ HOÀN TOÀN */}
+            <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-10">
+
+                {/* Calendar Card */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8"
+                >
+                    {/* Month Navigation */}
+                    <div className="flex items-center justify-between mb-10">
+                        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">
+                            {monthName}
+                        </h2>
+                        <div className="flex items-center gap-4">
                             <button
                                 onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
                                 className="p-4 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                             >
-                                <ChevronLeft className="w-6 h-6" />
+                                <ChevronLeft className="w-7 h-7" />
                             </button>
                             <button
                                 onClick={() => setCurrentDate(new Date())}
-                                className="px-8 py-4 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition shadow-lg"
+                                className="px-8 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-lg hover:shadow-xl transition"
                             >
                                 Hôm nay
                             </button>
@@ -135,51 +159,58 @@ export default function CalendarPage() {
                                 onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
                                 className="p-4 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                             >
-                                <ChevronRight className="w-6 h-6" />
+                                <ChevronRight className="w-7 h-7" />
                             </button>
                         </div>
                     </div>
 
-                    {/* Calendar Grid */}
-                    <div className="grid grid-cols-7 gap-4">
+                    {/* Days Header */}
+                    <div className="grid grid-cols-7 gap-4 mb-4">
                         {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map(day => (
-                            <div key={day} className="text-center font-bold text-gray-600 dark:text-gray-400 py-4">
+                            <div key={day} className="text-center text-lg font-bold text-gray-600 dark:text-gray-400 py-3">
                                 {day}
                             </div>
                         ))}
+                    </div>
 
+                    {/* Calendar Grid */}
+                    <div className="grid grid-cols-7 gap-2">
                         {daysInMonth().map((date, idx) => {
                             const dayEvents = getEventsForDate(date);
+                            const today = isToday(date);
+
                             return (
                                 <motion.div
                                     key={idx}
-                                    whileHover={{ scale: 1.05 }}
+                                    whileHover={date ? { scale: 1.05, y: -4 } : {}}
                                     onClick={() => date && openModal(date)}
-                                    className={`min-h-32 rounded-2xl p-4 cursor-pointer transition-all ${date
-                                            ? isToday(date)
-                                                ? "bg-indigo-600 text-white shadow-xl"
-                                                : "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
-                                            : "bg-transparent"
+                                    className={`min-h-32 rounded-2xl p-2 transition-all cursor-pointer ${date
+                                        ? today
+                                            ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl ring-4 ring-indigo-500/30"
+                                            : "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 hover:shadow-lg"
+                                        : "bg-transparent"
                                         }`}
                                 >
                                     {date && (
                                         <>
-                                            <div className={`text-lg font-semibold mb-2 ${isToday(date) ? "text-white" : ""}`}>
+                                            <div className={`text-xl font-bold mb-2 ${today ? "text-white" : "text-gray-800 dark:text-white"}`}>
                                                 {date.getDate()}
                                             </div>
-                                            <div className="space-y-1">
+                                            <div className="space-y-2">
                                                 {dayEvents.slice(0, 3).map(event => (
                                                     <div
                                                         key={event.id}
                                                         onClick={(e) => { e.stopPropagation(); openModal(date, event); }}
-                                                        className="text-xs p-2 rounded-lg bg-white/70 dark:bg-gray-800/70 backdrop-blur truncate"
+                                                        className="text-xs p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur truncate font-medium shadow-sm"
                                                     >
                                                         {event.time && <Clock className="w-3 h-3 inline mr-1" />}
                                                         {event.title}
                                                     </div>
                                                 ))}
                                                 {dayEvents.length > 3 && (
-                                                    <div className="text-xs text-gray-500">+{dayEvents.length - 3} nữa</div>
+                                                    <div className="text-xs text-gray-500 font-medium">
+                                                        +{dayEvents.length - 3} nữa
+                                                    </div>
                                                 )}
                                             </div>
                                         </>
@@ -188,105 +219,112 @@ export default function CalendarPage() {
                             );
                         })}
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Floating Add Button */}
                 <motion.button
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => openModal(new Date())}
-                    className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-full shadow-2xl flex items-center justify-center z-10"
+                    className="fixed bottom-8 right-8 w-18 h-18 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl shadow-2xl flex items-center justify-center text-white z-10"
                 >
-                    <Plus className="w-8 h-8" />
+                    <Plus className="w-10 h-10" />
                 </motion.button>
-            </div>
 
-            {/* Modal */}
-            <AnimatePresence>
-                {isModalOpen && selectedDate && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 backdrop-blur flex items-center justify-center p-4 z-50"
-                        onClick={() => setIsModalOpen(false)}
-                    >
+                {/* Modal – ĐỒNG BỘ HOÀN TOÀN */}
+                <AnimatePresence>
+                    {isModalOpen && selectedDate && (
                         <motion.div
-                            initial={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            exit={{ scale: 0.9 }}
-                            onClick={e => e.stopPropagation()}
-                            className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 max-w-lg w-full"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50"
+                            onClick={closeModal}
                         >
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-3xl font-bold">
-                                    {editingEvent ? "Sửa sự kiện" : "Thêm sự kiện mới"}
-                                </h2>
-                                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl">
-                                    <X className="w-6 h-6" />
-                                </button>
-                            </div>
-
-                            <div className="text-center mb-6">
-                                <p className="text-2xl font-bold text-indigo-600">
-                                    {selectedDate.toLocaleDateString("vi-VN", { weekday: "long, ngày d tháng m" })}
-                                </p>
-                            </div>
-
-                            <div className="space-y-5">
-                                <input
-                                    type="text"
-                                    placeholder="Tên sự kiện..."
-                                    value={form.title}
-                                    onChange={e => setForm({ ...form, title: e.target.value })}
-                                    className="w-full px-6 py-5 text-xl rounded-2xl bg-gray-100 dark:bg-gray-700 border-2 focus:border-indigo-500 focus:outline-none"
-                                    autoFocus
-                                />
-                                <div className="flex gap-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Giờ (VD: 14:00)"
-                                        value={form.time}
-                                        onChange={e => setForm({ ...form, time: e.target.value })}
-                                        className="flex-1 px-6 py-5 rounded-2xl bg-gray-100 dark:bg-gray-700 border-2 focus:border-indigo-500"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Địa điểm"
-                                        value={form.location}
-                                        onChange={e => setForm({ ...form, location: e.target.value })}
-                                        className="flex-1 px-6 py-5 rounded-2xl bg-gray-100 dark:bg-gray-700 border-2 focus:border-indigo-500"
-                                    />
-                                </div>
-                                <textarea
-                                    rows={3}
-                                    placeholder="Ghi chú..."
-                                    value={form.notes}
-                                    onChange={e => setForm({ ...form, notes: e.target.value })}
-                                    className="w-full px-6 py-5 rounded-2xl bg-gray-100 dark:bg-gray-700 border-2 focus:border-indigo-500 resize-none"
-                                />
-
-                                <div className="flex gap-4 justify-center pt-6">
-                                    {editingEvent && (
-                                        <button
-                                            onClick={() => deleteEvent(editingEvent.id)}
-                                            className="px-8 py-4 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-medium"
-                                        >
-                                            Xóa
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={saveEvent}
-                                        className="px-12 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-lg"
-                                    >
-                                        {editingEvent ? "Cập nhật" : "Thêm sự kiện"}
+                            <motion.div
+                                initial={{ scale: 0.9, y: 50 }}
+                                animate={{ scale: 1, y: 0 }}
+                                exit={{ scale: 0.9, y: 50 }}
+                                onClick={e => e.stopPropagation()}
+                                className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-10 max-w-lg w-full border border-gray-200 dark:border-gray-700"
+                            >
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                                        {editingEvent ? "Sửa sự kiện" : "Thêm sự kiện mới"}
+                                    </h2>
+                                    <button onClick={closeModal} className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl">
+                                        <X className="w-6 h-6" />
                                     </button>
                                 </div>
-                            </div>
+
+                                <div className="text-center mb-8">
+                                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                                        {selectedDate.toLocaleDateString("vi-VN", {
+                                            weekday: "long",
+                                            day: "numeric",
+                                            month: "long",
+                                            year: "numeric"
+                                        })}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <input
+                                        type="text"
+                                        placeholder="Tên sự kiện..."
+                                        value={form.title}
+                                        onChange={e => setForm({ ...form, title: e.target.value })}
+                                        className="w-full px-6 py-6 rounded-2xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-4 focus:ring-indigo-500 focus:outline-none text-lg font-medium"
+                                        autoFocus
+                                    />
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <input
+                                            type="text"
+                                            placeholder="Giờ (VD: 14:00 - 16:00)"
+                                            value={form.time}
+                                            onChange={e => setForm({ ...form, time: e.target.value })}
+                                            className="px-6 py-5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-4 focus:ring-indigo-500"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Địa điểm"
+                                            value={form.location}
+                                            onChange={e => setForm({ ...form, location: e.target.value })}
+                                            className="px-6 py-5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-4 focus:ring-indigo-500"
+                                        />
+                                    </div>
+
+                                    <textarea
+                                        rows={4}
+                                        placeholder="Ghi chú..."
+                                        value={form.notes}
+                                        onChange={e => setForm({ ...form, notes: e.target.value })}
+                                        className="w-full px-6 py-5 rounded-2xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-4 focus:ring-indigo-500 focus:outline-none resize-none"
+                                    />
+
+                                    <div className="flex gap-4 justify-end pt-6">
+                                        {editingEvent && (
+                                            <button
+                                                onClick={() => deleteEvent(editingEvent.id)}
+                                                className="px-8 py-4 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold transition"
+                                            >
+                                                Xóa
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={saveEvent}
+                                            className="px-10 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-xl hover:shadow-2xl transition"
+                                        >
+                                            {editingEvent ? "Cập nhật" : "Thêm sự kiện"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </>
     );
 }
