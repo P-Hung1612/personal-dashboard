@@ -1,6 +1,7 @@
 // src/pages/Journal/Entries.jsx
 // ĐÃ ĐỒNG BỘ HOÀN TOÀN VỚI CHUẨN OVERVIEW.JSX → ĐẸP NHƯ NOTION PRO
 import { useState, useEffect } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus, Search, Calendar, Smile, Frown, Meh, Cloud, Sun, CloudRain,
@@ -24,7 +25,7 @@ export default function Journal() {
     const [selectedEntry, setSelectedEntry] = useState(null);
     const [search, setSearch] = useState("");
     const [filterMood, setFilterMood] = useState("all");
-    const [isNewEntry, setIsNewEntry] = useState(false);
+    // const [isNewEntry, setIsNewEntry] = useState(false);
 
     useEffect(() => {
         try {
@@ -51,7 +52,6 @@ export default function Journal() {
             weather: "",
             tags: []
         });
-        setIsNewEntry(!entry);
     };
 
     const saveEntry = () => {
@@ -63,7 +63,7 @@ export default function Journal() {
             return exists ? prev.map(e => e.id === updated.id ? updated : e) : [...prev, updated];
         });
         setSelectedEntry(null);
-        setIsNewEntry(false);
+        // setIsNewEntry(false);
     };
 
     const deleteEntry = (id) => {
@@ -95,7 +95,7 @@ export default function Journal() {
                     <div className="flex items-center gap-6 mb-4">
                         <Sparkles className="w-16 h-16 lg:w-20 lg:h-20 drop-shadow-2xl animate-pulse" />
                         <div>
-                            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight">
+                            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
                                 Nhật ký cá nhân
                             </h1>
                             <p className="text-xl lg:text-2xl opacity-95 mt-3 font-medium">
@@ -111,7 +111,7 @@ export default function Journal() {
 
             <div className="flex h-screen bg-gradient-to-br from-amber-50/50 to-pink-50/50 dark:from-gray-900 dark:to-amber-900/20">
                 {/* SIDEBAR */}
-                <div className="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-8 overflow-y-auto shadow-xl">
+                <div className="w-112 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-8 overflow-y-auto shadow-xl">
                     {/* Search */}
                     <div className="relative mb-8">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-7 h-7 text-gray-400" />
@@ -126,7 +126,7 @@ export default function Journal() {
 
                     {/* Mood Filter */}
                     <div className="flex gap-4 mb-8 flex-wrap">
-                        <button onClick={() => setFilterMood("all")} className={`px-6 py-4 rounded-2xl font-bold transition ${filterMood === "all" ? "bg-amber-600 text-white shadow-lg" : "bg-gray-100 dark:bg-gray-700"}`}>
+                        <button onClick={() => setFilterMood("all")} className={`px-4 py-4 rounded-2xl font-bold transition ${filterMood === "all" ? "bg-amber-600 text-white shadow-lg" : "bg-gray-100 dark:bg-gray-700"}`}>
                             Tất cả
                         </button>
                         {MOODS.map(m => (
@@ -161,7 +161,11 @@ export default function Journal() {
                                     className={`p-6 rounded-2xl cursor-pointer transition-all hover:shadow-lg ${selectedEntry?.id === entry.id ? "bg-amber-100 dark:bg-amber-900/50 ring-4 ring-amber-500 shadow-xl" : "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"}`}
                                 >
                                     <h3 className="text-xl font-bold text-gray-800 dark:text-white">
-                                        {new Date(entry.date).toLocaleDateString("vi-VN", { weekday: "long, ngày d tháng m" })}
+                                        {new Date(entry.date).toLocaleDateString("vi-VN", {
+                                            weekday: "long",
+                                            day: "numeric",
+                                            month: "long"
+                                        })}
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                                         {entry.content || "Chưa có nội dung..."}
@@ -217,12 +221,12 @@ export default function Journal() {
                                 {/* Header */}
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h2 className="text-5xl font-extrabold text-gray-800 dark:text-white">
+                                        <h2 className="text-3xl font-extrabold mt-4 text-gray-800 dark:text-white">
                                             {new Date(selectedEntry.date).toLocaleDateString("vi-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                                         </h2>
                                     </div>
                                     <div className="flex gap-4">
-                                        {isNewEntry && (
+                                        {selectedEntry && selectedEntry.content?.trim() && (
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
@@ -245,26 +249,26 @@ export default function Journal() {
                                 <div className="grid grid-cols-2 gap-12">
                                     <div>
                                         <p className="text-xl font-bold mb-6 text-gray-700 dark:text-gray-300">Hôm nay bạn cảm thấy thế nào?</p>
-                                        <div className="flex gap-6">
+                                        <div className="flex gap-4">
                                             {MOODS.map(m => (
                                                 <button
                                                     key={m.label}
                                                     onClick={() => setSelectedEntry({ ...selectedEntry, mood: m.label })}
-                                                    className={`p-8 rounded-3xl transition-all ${selectedEntry.mood === m.label ? "ring-4 ring-amber-500 scale-110 shadow-2xl" : "hover:scale-105"} ${m.bg}`}
+                                                    className={`p-6 rounded-3xl transition-all ${selectedEntry.mood === m.label ? "ring-4 ring-amber-500 scale-110 shadow-2xl" : "hover:scale-105"} ${m.bg}`}
                                                 >
-                                                    <m.icon className={`w-20 h-20 ${m.color}`} />
+                                                    <m.icon className={`w-12 h-12 ${m.color}`} />
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
                                     <div>
                                         <p className="text-xl font-bold mb-6 text-gray-700 dark:text-gray-300">Thời tiết hôm nay</p>
-                                        <div className="flex gap-6">
+                                        <div className="flex gap-4">
                                             {WEATHERS.map(w => (
                                                 <button
                                                     key={w.label}
                                                     onClick={() => setSelectedEntry({ ...selectedEntry, weather: w.label })}
-                                                    className={`p-8 rounded-3xl text-6xl transition-all ${selectedEntry.weather === w.label ? "ring-4 ring-sky-500 scale-110 shadow-2xl" : "hover:scale-105"} ${w.bg}`}
+                                                    className={`p-7 rounded-3xl text-xl transition-all ${selectedEntry.weather === w.label ? "ring-4 ring-sky-500 scale-110 shadow-2xl" : "hover:scale-105"} ${w.bg}`}
                                                 >
                                                     {w.emoji}
                                                 </button>
@@ -303,11 +307,11 @@ export default function Journal() {
                         /* Empty State */
                         <div className="flex-1 flex items-center justify-center">
                             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-                                <div className="w-64 h-64 mx-auto mb-12 bg-gradient-to-br from-amber-100 to-pink-100 dark:from-amber-900/30 dark:to-pink-900/30 rounded-3xl border-4 border-dashed border-amber-400 dark:border-amber-700 flex items-center justify-center">
-                                    <Sparkles className="w-32 h-32 text-amber-600 dark:text-amber-400" />
+                                <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-amber-100 to-pink-100 dark:from-amber-900/30 dark:to-pink-900/30 rounded-3xl border-4 border-dashed border-amber-400 dark:border-amber-700 flex items-center justify-center">
+                                    <Sparkles className="w-16 h-16 text-amber-600 dark:text-amber-400" />
                                 </div>
-                                <p className="text-5xl font-extrabold text-gray-700 dark:text-gray-300">Chưa có nhật ký nào</p>
-                                <p className="text-2xl text-gray-500 dark:text-gray-400 mt-6">Bấm "Viết nhật ký mới" để bắt đầu hành trình của bạn</p>
+                                <p className="text-2xl font-extrabold text-gray-700 dark:text-gray-300">Chưa có nhật ký nào</p>
+                                <p className="text-xl text-gray-500 dark:text-gray-400 mt-4">Bấm "Viết nhật ký mới" để bắt đầu hành trình của bạn</p>
                             </motion.div>
                         </div>
                     )}
