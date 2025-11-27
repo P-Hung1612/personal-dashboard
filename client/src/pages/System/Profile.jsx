@@ -1,11 +1,20 @@
-// src/pages/Profile.jsx
+// src/pages/Life/Profile.jsx
+// ĐÃ ĐỒNG BỘ HOÀN TOÀN VỚI FINANCE & COLLECTION → ĐẸP KHÔNG THỂ CHỐNG CỰ!
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     User, Palette, Moon, Sun, Download, Upload, Trash2,
-    Heart, DollarSign, Footprints, Sparkles, Calendar,
-    Camera, X, Save, RefreshCw
+    Heart, DollarSign, Footprints, Sparkles, Camera, Save
 } from "lucide-react";
+
+const THEMES = {
+    purple: "from-purple-600 via-pink-600 to-rose-600",
+    blue: "from-blue-600 via-cyan-600 to-teal-600",
+    green: "from-emerald-600 via-green-600 to-teal-600",
+    pink: "from-pink-600 via-rose-600 to-red-600",
+    orange: "from-orange-600 via-amber-600 to-yellow-600",
+    rose: "from-rose-600 via-pink-600 to-purple-600",
+};
 
 export default function Profile() {
     const [name, setName] = useState("Bạn");
@@ -24,8 +33,9 @@ export default function Profile() {
             setBio(data.bio || "");
             setThemeColor(data.themeColor || "purple");
             setAvatar(data.avatar || null);
-            setIsDark(data.isDark || false);
+            setIsDark(data.isDark ?? false);
             if (data.isDark) document.documentElement.classList.add("dark");
+            else document.documentElement.classList.remove("dark");
         }
     }, []);
 
@@ -49,11 +59,12 @@ export default function Profile() {
         }
     };
 
-    // Thống kê
+    // Thống kê toàn hệ thống
     const stats = {
         moodDays: JSON.parse(localStorage.getItem("lifeos-mood") || "[]").length,
         totalSpent: JSON.parse(localStorage.getItem("lifeos-finance-tx") || "[]")
-            .filter(t => t.type === "expense").reduce((a, t) => a + t.amount, 0),
+            .filter(t => t.type === "expense")
+            .reduce((a, t) => a + t.amount, 0),
         totalSteps: Object.values(JSON.parse(localStorage.getItem("lifeos-health-steps") || "{}"))
             .reduce((a, b) => a + b, 0),
         memories: JSON.parse(localStorage.getItem("lifeos-relationship") || "[]")
@@ -61,12 +72,14 @@ export default function Profile() {
         collection: JSON.parse(localStorage.getItem("lifeos-collection") || "[]").length,
     };
 
-    // Export / Import
+    // Export / Import / Reset
     const exportData = () => {
         const data = {
             profile: localStorage.getItem("lifeos-profile"),
             mood: localStorage.getItem("lifeos-mood"),
             finance: localStorage.getItem("lifeos-finance-tx"),
+            financeWallets: localStorage.getItem("lifeos-finance-wallets"),
+            financeBudget: localStorage.getItem("lifeos-finance-budget"),
             health: {
                 weight: localStorage.getItem("lifeos-health-weight"),
                 sleep: localStorage.getItem("lifeos-health-sleep"),
@@ -91,14 +104,15 @@ export default function Profile() {
         reader.onload = (ev) => {
             try {
                 const data = JSON.parse(ev.target.result);
-                Object.keys(data).forEach(key => {
+                Object.entries(data).forEach(([key, value]) => {
                     if (key === "health") {
-                        Object.keys(data.health).forEach(k => localStorage.setItem(`lifeos-health-${k}`, data.health[k]));
+                        Object.entries(value).forEach(([k, v]) => localStorage.setItem(`lifeos-health-${k}`, v));
                     } else {
-                        localStorage.setItem(`lifeos-${key}`, data[key]);
+                        if (value !== null) localStorage.setItem(`lifeos-${key}`, value);
                     }
                 });
-                alert("Khôi phục dữ liệu thành công! Refresh lại trang nhé");
+                alert("Khôi phục dữ liệu thành công! Đang reload...");
+                setTimeout(() => location.reload(), 1000);
             } catch (err) {
                 alert("File không hợp lệ");
             }
@@ -113,168 +127,180 @@ export default function Profile() {
         }
     };
 
-    const THEMES = [
-        { name: "purple", value: "purple" },
-        { name: "blue", value: "blue" },
-        { name: "green", value: "green" },
-        { name: "pink", value: "pink" },
-        { name: "orange", value: "orange" },
-        { name: "rose", value: "rose" },
-    ];
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:to-black">
-            <div className="max-w-6xl mx-auto p-6 lg:p-12">
+        <>
+            {/* HEADER – ĐỒNG BỘ CHUẨN LIFE OS */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`bg-gradient-to-r ${THEMES[themeColor]} dark:from-purple-900 dark:via-pink-900 dark:to-rose-900 text-white p-8 lg:p-14`}
+            >
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center gap-6 mb-6">
+                        <Sparkles className="w-16 h-16 lg:w-20 lg:h-20 drop-shadow-2xl animate-pulse" />
+                        <div>
+                            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">Hồ sơ cá nhân</h1>
+                            <p className="text-xl lg:text-2xl opacity-95 mt-3 font-medium">
+                                {new Date().toLocaleDateString("vi-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                            </p>
+                        </div>
+                    </div>
+                    <p className="text-lg lg:text-xl opacity-90 max-w-4xl ml-24">
+                        Đây là bạn – trung tâm của vũ trụ LifeOS. Tùy chỉnh để mọi thứ thật sự là của bạn.
+                    </p>
+                </div>
+            </motion.div>
 
-                {/* Header */}
-                <motion.div initial={{ opacity: 0, y: -40 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-                    <h1 className="text-8xl font-bold text-gray-800 dark:text-white mb-4 flex items-center justify-center gap-8">
-                        <User className="w-20 h-20 text-purple-600" />
-                        Hồ sơ cá nhân
-                    </h1>
-                    <p className="text-3xl text-gray-600 dark:text-gray-400">Đây là bạn – trong vũ trụ LifeOS</p>
+            <div className="p-8 lg:p-12 max-w-7xl mx-auto space-y-12">
+                {/* AVATAR + INFO CARD */}
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 p-10 text-center"
+                >
+                    <div className="relative inline-block mb-8">
+                        <div className="w-64 h-64 rounded-full overflow-hidden ring-8 ring-white dark:ring-gray-800 shadow-2xl">
+                            {avatar ? (
+                                <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className={`w-full h-full bg-gradient-to-br ${THEMES[themeColor]} flex items-center justify-center text-white text-9xl font-bold`}>
+                                    {name[0]?.toUpperCase() || "B"}
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="absolute bottom-4 right-4 p-4 bg-black/60 backdrop-blur-xl rounded-full text-white hover:bg-black/80 transition"
+                        >
+                            <Camera className="w-10 h-10" />
+                        </button>
+                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                    </div>
+
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="Tên của bạn"
+                        className="text-5xl lg:text-6xl font-extrabold bg-transparent text-center w-full focus:outline-none mb-6"
+                    />
+                    <textarea
+                        value={bio}
+                        onChange={e => setBio(e.target.value)}
+                        rows={3}
+                        placeholder="Một câu nói về bạn..."
+                        className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 bg-transparent text-center w-full resize-none focus:outline-none"
+                    />
                 </motion.div>
 
-                <div className="grid lg:grid-cols-3 gap-12">
-
-                    {/* Avatar + Info */}
-                    <div className="lg:col-span-1">
-                        <motion.div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-10 text-center">
-                            <div className="relative inline-block">
-                                <div className="w-64 h-64 rounded-full overflow-hidden border-8 border-purple-500 shadow-2xl">
-                                    {avatar ? (
-                                        <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-9xl font-bold">
-                                            {name[0]?.toUpperCase() || "B"}
-                                        </div>
-                                    )}
-                                </div>
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="absolute bottom-4 right-4 p-4 bg-black/60 backdrop-blur rounded-full text-white hover:bg-black/80 transition"
-                                >
-                                    <Camera className="w-8 h-8" />
-                                </button>
-                                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
-                            </div>
-
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                className="text-5xl font-bold mt-8 bg-transparent text-center w-full border-b-4 border-purple-500 focus:outline-none"
-                                placeholder="Tên của bạn"
-                            />
-                            <textarea
-                                value={bio}
-                                onChange={e => setBio(e.target.value)}
-                                rows={3}
-                                className="text-xl text-gray-600 dark:text-gray-400 mt-6 w-full bg-transparent text-center resize-none focus:outline-none"
-                                placeholder="Một câu nói về bạn..."
-                            />
+                {/* STATS GRID – giống Finance */}
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-8">
+                    {[
+                        { icon: Heart, label: "Ngày mood", value: stats.moodDays, gradient: "from-pink-500 to-rose-600" },
+                        { icon: DollarSign, label: "Đã chi tiêu", value: `${(stats.totalSpent / 1000000).toFixed(1)}tr`, gradient: "from-red-500 to-rose-600" },
+                        { icon: Footprints, label: "Bước chân", value: stats.totalSteps.toLocaleString(), gradient: "from-emerald-500 to-teal-600" },
+                        { icon: Sparkles, label: "Ký ức", value: stats.memories + stats.collection, gradient: "from-purple-500 to-pink-600" },
+                        { icon: User, label: "Hành trình", value: "Đang tỏa sáng", gradient: "from-yellow-500 to-orange-600" },
+                    ].map((stat, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            className={`bg-gradient-to-br ${stat.gradient} rounded-3xl p-8 text-white shadow-2xl text-center`}
+                        >
+                            <stat.icon className="w-14 h-14 mx-auto mb-4 opacity-90" />
+                            <p className="text-4xl font-extrabold">{stat.value}</p>
+                            <p className="text-xl opacity-90 mt-2">{stat.label}</p>
                         </motion.div>
-                    </div>
+                    ))}
+                </div>
 
-                    {/* Settings + Stats */}
-                    <div className="lg:col-span-2 space-y-10">
-
-                        {/* Theme & Mode */}
-                        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-10">
-                            <h2 className="text-4xl font-bold mb-8 flex items-center gap-4">
-                                <Palette className="w-12 h-12 text-purple-600" /> Giao diện
-                            </h2>
-                            <div className="grid grid-cols-3 gap-6 mb-8">
-                                <div>
-                                    <p className="text-xl font-medium mb-4">Màu chủ đạo</p>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        {THEMES.map(t => (
-                                            <button
-                                                key={t.value}
-                                                onClick={() => setThemeColor(t.value)}
-                                                className={`w-20 h-20 rounded-2xl bg-${t.value}-500 ${themeColor === t.value ? "ring-8 ring-white ring-offset-4 shadow-2xl scale-110" : ""} transition`}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="col-span-2">
-                                    <p className="text-xl font-medium mb-4">Chế độ</p>
-                                    <button
-                                        onClick={() => setIsDark(!isDark)}
-                                        className="relative w-48 h-28 bg-gray-200 dark:bg-gray-700 rounded-full shadow-xl overflow-hidden"
-                                    >
-                                        <motion.div
-                                            className="absolute inset-0 flex items-center justify-center"
-                                            animate={{ x: isDark ? 100 : -100 }}
-                                        >
-                                            {isDark ? <Moon className="w-16 h-16 text-yellow-400" /> : <Sun className="w-16 h-16 text-yellow-500" />}
-                                        </motion.div>
-                                    </button>
-                                </div>
-                            </div>
+                {/* THEME & DARK MODE */}
+                {/* <div className="grid lg:grid-cols-2 gap-8">
+                    <motion.div
+                        initial={{ opacity: 0, x: -40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-10"
+                    >
+                        <h2 className="text-3xl font-bold mb-8 flex items-center gap-4">
+                            <Palette className="w-10 h-10" /> Màu chủ đạo
+                        </h2>
+                        <div className="grid grid-cols-3 gap-6">
+                            {Object.keys(THEMES).map(key => (
+                                <button
+                                    key={key}
+                                    onClick={() => setThemeColor(key)}
+                                    className={`h-24 rounded-2xl bg-gradient-to-br ${THEMES[key]} ${themeColor === key ? "ring-8 ring-white shadow-2xl scale-110" : ""} transition-all`}
+                                />
+                            ))}
                         </div>
+                    </motion.div>
 
-                        {/* Stats */}
-                        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-10">
-                            <h2 className="text-4xl font-bold mb-8">Hành trình của bạn</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                                <div className="text-center">
-                                    <Heart className="w-16 h-16 text-pink-600 mx-auto mb-4" />
-                                    <p className="text-5xl font-bold">{stats.moodDays}</p>
-                                    <p className="text-xl text-gray-600">Ngày mood</p>
-                                </div>
-                                <div className="text-center">
-                                    <DollarSign className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                                    <p className="text-5xl font-bold">{stats.totalSpent.toLocaleString()}đ</p>
-                                    <p className="text-xl text-gray-600">Đã chi</p>
-                                </div>
-                                <div className="text-center">
-                                    <Footprints className="w-16 h-16 text-emerald-600 mx-auto mb-4" />
-                                    <p className="text-5xl font-bold">{stats.totalSteps.toLocaleString()}</p>
-                                    <p className="text-xl text-gray-600">Bước chân</p>
-                                </div>
-                                <div className="text-center">
-                                    <Sparkles className="w-16 h-16 text-purple-600 mx-auto mb-4" />
-                                    <p className="text-5xl font-bold">{stats.memories + stats.collection}</p>
-                                    <p className="text-xl text-gray-600">Ký ức đẹp</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Data Management */}
-                        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-10">
-                            <h2 className="text-4xl font-bold mb-8">Dữ liệu</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <button onClick={exportData} className="p-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-2xl shadow-xl flex flex-col items-center gap-4 hover:scale-105 transition">
-                                    <Download className="w-12 h-12" />
-                                    <span className="text-2xl font-bold">Export dữ liệu</span>
-                                </button>
-                                <label className="p-8 bg-gradient-to-br from-blue-500 to-cyan-600 text-white rounded-2xl shadow-xl flex flex-col items-center gap-4 cursor-pointer hover:scale-105 transition">
-                                    <Upload className="w-12 h-12" />
-                                    <span className="text-2xl font-bold">Import dữ liệu</span>
-                                    <input type="file" accept=".json" onChange={importData} className="hidden" />
-                                </label>
-                                <button onClick={resetAll} className="p-8 bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-2xl shadow-xl flex flex-col items-center gap-4 hover:scale-105 transition">
-                                    <Trash2 className="w-12 h-12" />
-                                    <span className="text-2xl font-bold">Reset tất cả</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="text-center">
-                            <motion.button
-                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
-                                onClick={saveProfile}
-                                className="px-16 py-8 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-3xl font-bold rounded-full shadow-2xl flex items-center gap-6 mx-auto"
+                    <motion.div
+                        initial={{ opacity: 0, x: 40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-10 flex items-center justify-center"
+                    >
+                        <button
+                            onClick={() => setIsDark(!isDark)}
+                            className="relative w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-full shadow-2xl overflow-hidden"
+                        >
+                            <motion.div
+                                className="absolute inset-0 flex items-center justify-center"
+                                animate={{ x: isDark ? 120 : -120 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             >
-                                <Save className="w-12 h-12" />
-                                Lưu hồ sơ
-                            </motion.button>
-                        </div>
+                                {isDark ? <Moon className="w-20 h-20 text-yellow-400" /> : <Sun className="w-20 h-20 text-yellow-500" />}
+                            </motion.div>
+                            <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold">
+                                {isDark ? "Dark Mode" : "Light Mode"}
+                            </span>
+                        </button>
+                    </motion.div>
+                </div> */}
+
+                {/* DATA MANAGEMENT */}
+                {/* <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-10">
+                    <h2 className="text-3xl font-bold mb-10">Quản lý dữ liệu</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <button
+                            onClick={exportData}
+                            className="p-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-3xl shadow-2xl hover:shadow-emerald-500/50 flex flex-col items-center gap-4 hover:scale-105 transition"
+                        >
+                            <Download className="w-14 h-14" />
+                            <span className="text-2xl font-bold">Export dữ liệu</span>
+                        </button>
+
+                        <label className="p-8 bg-gradient-to-br from-blue-500 to-cyan-600 text-white rounded-3xl shadow-2xl hover:shadow-cyan-500/50 flex flex-col items-center gap-4 cursor-pointer hover:scale-105 transition">
+                            <Upload className="w-14 h-14" />
+                            <span className="text-2xl font-bold">Import dữ liệu</span>
+                            <input type="file" accept=".json" onChange={importData} className="hidden" />
+                        </label>
+
+                        <button
+                            onClick={resetAll}
+                            className="p-8 bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-3xl shadow-2xl hover:shadow-red-500/50 flex flex-col items-center gap-4 hover:scale-105 transition"
+                        >
+                            <Trash2 className="w-14 h-14" />
+                            <span className="text-2xl font-bold">Reset tất cả</span>
+                        </button>
                     </div>
+                </div> */}
+
+                {/* SAVE BUTTON */}
+                <div className="text-center">
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={saveProfile}
+                        className="px-20 py-8 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-3xl font-bold rounded-full shadow-2xl flex items-center gap-6 mx-auto hover:shadow-purple-500/50 transition"
+                    >
+                        <Save className="w-12 h-12" />
+                        Lưu hồ sơ
+                    </motion.button>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
