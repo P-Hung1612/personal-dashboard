@@ -4,6 +4,7 @@ import { useLocation, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Menu } from "lucide-react";
 import { createPortal } from "react-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Sidebar() {
     const location = useLocation();
@@ -65,13 +66,13 @@ export default function Sidebar() {
         },
     ];
 
-    const user = {
-        name: "Phuoc Hung",
-        email: "phuochung@example.com",
-        avatar: "https://i.pravatar.cc/100?img=12",
-        // section: "Login-Register",
-    };
+    // const user = {
+    //     name: "Phuoc Hung",
+    //     email: "phuochung@example.com",
+    //     avatar: "https://i.pravatar.cc/100?img=12",        
+    // };
 
+    const { user, logout } = useAuth();
     return (
         <>
             <motion.aside
