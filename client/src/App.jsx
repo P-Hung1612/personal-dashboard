@@ -36,15 +36,7 @@ const Collections = lazy(() => import("./pages/Life/Collections").catch(() => ({
 const Profile = lazy(() => import("./pages/System/Profile").catch(() => ({ default: () => <DevPage name="Profile" /> })));
 const Settings = lazy(() => import("./pages/System/Settings").catch(() => ({ default: () => <DevPage name="Settings" /> })));
 
-const NotFound = lazy(() => import("./pages/NotFound").catch(() => ({
-    default: () => (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-            <h1 className="text-9xl font-bold text-gray-300">404</h1>
-            <p className="text-2xl text-gray-600 mt-8">Không tìm thấy trang</p>
-            <a href="/" className="mt-6 text-indigo-600 hover:underline">← Quay về trang chủ</a>
-        </div>
-    )
-})));
+// const Login = lazy(() => import("./pages/Login-Register/Login").catch(() => ({ default: () => <DevPage name="Login" /> })));
 
 export default function App() {
     return (
@@ -84,10 +76,10 @@ export default function App() {
                         {/* System */}
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/settings" element={<Settings />} />
-                    </Route>
 
-                    {/* 404 */}
-                    <Route path="*" element={<NotFound />} />
+                        {/* Login/Register */}
+                        {/* <Route path="/login" element={<Login />} /> */}
+                    </Route>
                 </Routes>
             </Suspense>
         </Router>

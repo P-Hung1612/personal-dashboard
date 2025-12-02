@@ -69,6 +69,7 @@ export default function Sidebar() {
         name: "Phuoc Hung",
         email: "phuochung@example.com",
         avatar: "https://i.pravatar.cc/100?img=12",
+        // section: "Login-Register",
     };
 
     return (
@@ -80,11 +81,11 @@ export default function Sidebar() {
             >
                 {/* HEADER */}
                 <div>
-                    <div className="flex items-center justify-between mb-6">
+                    {/* <div className="flex items-center justify-between mb-6">
                         <h1 className="text-xl font-bold text-indigo-700">
                             {!isCollapsed && "Life OS"}
                         </h1>
-                    </div>
+                    </div> */}
 
                     <div className="space-y-6">
                         {menu.map((group) => (
