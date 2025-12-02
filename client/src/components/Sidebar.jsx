@@ -172,7 +172,7 @@ export default function Sidebar() {
                     </div>
 
                     <div
-                        className={`flex items-center gap-3 border-t border-gray-200 pt-4 ${isCollapsed ? "justify-center" : ""
+                        className={`flex items-center gap-3 border-t border-gray-200 mb-14 pt-4 ${isCollapsed ? "justify-center" : ""
                             }`}
                     >
                         <img src={user.avatar} className="w-10 h-10 rounded-full object-cover" />
