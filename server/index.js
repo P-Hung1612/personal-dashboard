@@ -4,6 +4,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadUserData, saveUserData } from './storage.js';
+import { faker } from '@faker-js/faker';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,9 @@ const VALID_USERS = {
   "admin@gmail.com": "admin123",
   "you@gmail.com": "123123"
 };
+
+// Health check
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // API: Login
 app.post('/api/auth/login', (req, res) => {
@@ -38,9 +42,50 @@ app.post('/api/auth/register', (req, res) => {
     return res.status(400).json({ error: "Email đã tồn tại!" });
   }
   VALID_USERS[email] = password;
-  const newUser = { email, name: name || email.split('@')[0], tasks: [], notes: [], goals: [], habits: [], areas: [] };
-  saveUserData(email, newUser);
-  res.json({ success: true, user: { email, name: newUser.name } });
+  // Tạo dữ liệu mẫu siêu đẹp bằng Faker
+  const fakeTasks = Array.from({ length: 15 }, () => ({
+    id: faker.string.uuid(),
+    title: faker.hacker.phrase().replace(/^./, str => str.toUpperCase()),
+    completed: faker.datatype.boolean({ probability: 0.3 }),
+    dueDate: faker.date.soon({ days: 14 }).toISOString().split('T')[0],
+    tags: faker.helpers.arrayElements(['work', 'personal', 'urgent', 'health', 'learning'], { min: 0, max: 3 })
+  }));
+
+  const fakeNotes = Array.from({ length: 8 }, () => ({
+    id: faker.string.uuid(),
+    title: faker.commerce.productName(),
+    content: faker.lorem.paragraphs({ min: 1, max: 4 }),
+    createdAt: faker.date.recent({ days: 30 }).toISOString(),
+    tags: faker.helpers.arrayElements(['idea', 'journal', 'meeting', 'book'], { min: 1, max: 2 })
+  }));
+
+  const fakeGoals = Array.from({ length: 5 }, () => ({
+    id: faker.string.uuid(),
+    title: faker.company.catchPhrase(),
+    progress: faker.number.int({ min: 10, max: 90 }),
+    deadline: faker.date.future({ years: 2 }).toISOString().split('T')[0],
+    category: faker.helpers.arrayElement(['career', 'health', 'finance', 'relationship', 'learning'])
+  }));
+
+  const fakeHabits = Array.from({ length: 7 }, () => ({
+    id: faker.string.uuid(),
+    name: faker.helpers.arrayElement(['Uống 2 lít nước', 'Đọc sách 30p', 'Tập gym', 'Thiền 10p', 'Viết nhật ký', 'Ngủ trước 11h', 'Học 1 kỹ năng mới']),
+    streak: faker.number.int({ min: 0, max: 120 }),
+    completedToday: faker.datatype.boolean({ probability: 0.7 })
+  }));
+
+  const newUserData = {
+    email,
+    name: name || email.split('@')[0],
+    tasks: fakeTasks,
+    notes: fakeNotes,
+    goals: fakeGoals,
+    habits: fakeHabits,
+    areas: ["Work", "Personal", "Health", "Learning"]
+  };
+
+  saveUserData(email, newUserData);
+  res.json({ success: true, user: { email, name: newUserData.name } });
 });
 
 // MIDDLEWARE XÁC THỰC – ĐẶT SAU VALID_USERS
@@ -65,9 +110,6 @@ app.post('/api/data', (req, res) => {
   saveUserData(req.user.email, { ...req.body, email: req.user.email });
   res.json({ success: true });
 });
-
-// Health check
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 const PORT = 4000;
 app.listen(PORT, () => {

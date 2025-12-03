@@ -1,9 +1,14 @@
 {
   "email": "phuoc@lifeos.app",
-  "name": "phuoc",
-  "tasks": [],
-  "notes": [],
-  "goals": [],
-  "habits": [],
-  "areas": []
+  "dailyReviews": [
+    {
+      "date": "2025-12-03",
+      "rating": 3,
+      "mood": "",
+      "wins": "",
+      "grateful": "",
+      "improve": "",
+      "energy": 70
+    }
+  ]
 }
