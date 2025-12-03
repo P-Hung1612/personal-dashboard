@@ -6,6 +6,9 @@ import Confetti from "react-confetti";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 
+// Import API
+import { loginWithBackend, registerWithBackend } from '../../lib/api.js';
+
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -14,41 +17,45 @@ export default function AuthPage() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [confetti, setConfetti] = useState(false);
+  const [loading, setLoading] = useState(false); // Thêm loading để UX tốt hơn
 
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // DANH SÁCH TÀI KHOẢN TEST (có thể thêm thoải mái)
-  const validUsers = [
-    { email: "phuoc@lifeos.app", password: "123456", name: "Phước Chung" },
-    { email: "demo@lifeos.app", password: "demo", name: "Demo User" },
-    { email: "admin@gmail.com", password: "admin123", name: "Admin Pro" },
-    { email: "you@gmail.com", password: "123123", name: "Bạn" },
-  ];
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
-    if (isLogin) {
-      // ĐĂNG NHẬP
-      const user = validUsers.find(u => u.email === email && u.password === password);
-      if (user) {
-        login({ name: user.name, email: user.email });
-        setConfetti(true);
-        setTimeout(() => navigate("/"), 1800);
+    try {
+      let userData;
+
+      if (isLogin) {
+        // ĐĂNG NHẬP QUA BACKEND
+        const result = await loginWithBackend(email.trim(), password);
+        userData = result.user;
+
       } else {
-        setError("Email hoặc mật khẩu không đúng!");
+        // ĐĂNG KÝ QUA BACKEND
+        if (!name.trim()) {
+          setError("Vui lòng nhập họ tên");
+          setLoading(false);
+          return;
+        }
+        const result = await registerWithBackend(email.trim(), password, name.trim());
+        userData = result.user;
       }
-    } else {
-      // ĐĂNG KÝ (giả lập – ai cũng đăng ký được)
-      if (!name || !email || !password) {
-        setError("Vui lòng điền đầy đủ thông tin");
-        return;
-      }
-      login({ name, email });
+
+      // Đăng nhập thành công → lưu vào AuthContext
+      login(userData);
       setConfetti(true);
       setTimeout(() => navigate("/"), 1800);
+
+    } catch (err) {
+      // Lỗi từ backend hoặc mạng
+      setError(err.message || "Đã có lỗi xảy ra. Thử lại nhé!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,11 +64,8 @@ export default function AuthPage() {
       {confetti && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={1000} gravity={0.15} />}
 
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:to-black px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md mx-auto"
-        >
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto">
+
           {/* Logo */}
           <div className="text-center mb-10">
             <h1 className="text-7xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -75,16 +79,10 @@ export default function AuthPage() {
           {/* Card */}
           <div className="bg-white/90 dark:bg-gray-800/95 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/30">
             <div className="flex mb-8 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
-              <button
-                onClick={() => setIsLogin(true)}
-                className={`flex-1 py-3 rounded-lg font-medium transition ${isLogin ? "bg-white dark:bg-gray-900 shadow-md" : "text-gray-500"}`}
-              >
+              <button onClick={() => setIsLogin(true)} className={`flex-1 py-3 rounded-lg font-medium transition ${isLogin ? "bg-white dark:bg-gray-900 shadow-md" : "text-gray-500"}`}>
                 Đăng nhập
               </button>
-              <button
-                onClick={() => setIsLogin(false)}
-                className={`flex-1 py-3 rounded-lg font-medium transition ${!isLogin ? "bg-white dark:bg-gray-900 shadow-md" : "text-gray-500"}`}
-              >
+              <button onClick={() => setIsLogin(false)} className={`flex-1 py-3 rounded-lg font-medium transition ${!isLogin ? "bg-white dark:bg-gray-900 shadow-md" : "text-gray-500"}`}>
                 Đăng ký
               </button>
             </div>
@@ -97,7 +95,7 @@ export default function AuthPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-5 py-4 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-4 focus:ring-purple-400"
-                  required={!isLogin}
+                  required
                 />
               )}
 
@@ -122,18 +120,14 @@ export default function AuthPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
 
               {error && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-red-500 text-center font-medium"
-                >
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-center font-medium">
                   {error}
                 </motion.p>
               )}
@@ -142,9 +136,10 @@ export default function AuthPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white text-lg font-bold rounded-xl shadow-xl hover:shadow-2xl transition"
+                disabled={loading}
+                className="w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white text-lg font-bold rounded-xl shadow-xl hover:shadow-2xl transition disabled:opacity-70"
               >
-                {isLogin ? "Đăng nhập ngay" : "Tạo tài khoản miễn phí"}
+                {loading ? "Đang xử lý..." : (isLogin ? "Đăng nhập ngay" : "Tạo tài khoản miễn phí")}
               </motion.button>
             </form>
 

@@ -1,8 +1,9 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense, useContext, createContext, useState, useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react"; // Thêm useEffect
 import MainLayout from "./components/layout/MainLayout";
 import { useAuth, AuthProvider } from "./context/AuthContext.jsx";
+import { loadData, saveData } from './lib/api.js'; // Import saveData để autosave
 
 // === COMPONENT KHI CHƯA LÀM XONG TRANG ===
 const DevPage = ({ name }) => (
@@ -13,7 +14,6 @@ const DevPage = ({ name }) => (
     </div>
 );
 
-// === LAZY LOAD + TỰ ĐỘNG HIỆN DevPage NẾU CHƯA TẠO FILE ===
 const lazyWithDevFallback = (importFunc, pageName) =>
     lazy(() =>
         importFunc().catch(() => ({
@@ -21,6 +21,7 @@ const lazyWithDevFallback = (importFunc, pageName) =>
         }))
     );
 
+// Lazy load các trang
 const Overview = lazyWithDevFallback(() => import("./pages/Dashboard/Overview"), "Overview");
 const Analytics = lazyWithDevFallback(() => import("./pages/Dashboard/Analytics"), "Analytics");
 const DailyReview = lazyWithDevFallback(() => import("./pages/Dashboard/DailyReview"), "Daily Review");
@@ -56,59 +57,75 @@ function ProtectedRoute({ children }) {
     return user ? children : <Navigate to="/login" replace />;
 }
 
+// === COMPONENT CHÍNH CÓ TỰ ĐỘNG LOAD + AUTOSAVE DỮ LIỆU ===
+function AppContent() {
+    const { user, setUserData, userData } = useAuth(); // Giả sử bạn có setUserData trong context
+
+    // Load dữ liệu khi user đăng nhập
+    useEffect(() => {
+        if (user?.email) {
+            loadData(user.email).then((data) => {
+                if (data) {
+                    console.log("Đã load dữ liệu từ backend/LocalStorage:", data);
+                    setUserData(data);
+                }
+            });
+        }
+    }, [user]);
+
+    // Auto-save mỗi 10 giây nếu có thay đổi (tùy chọn – rất ngon)
+    useEffect(() => {
+        if (!user?.email || !userData) return;
+
+        const interval = setInterval(() => {
+            saveData({ ...userData, email: user.email });
+            console.log("Auto-save thành công!");
+        }, 10000); // 10 giây lưu 1 lần
+
+        return () => clearInterval(interval);
+    }, [userData, user]);
+
+    return (
+        <Router>
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">
+                <div className="text-2xl font-medium text-indigo-600">Đang tải trang...</div>
+            </div>}>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+
+                    <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                        <Route path="/" element={<Overview />} />
+                        <Route path="/analytics" element={<Analytics />} />
+                        <Route path="/review" element={<DailyReview />} />
+                        <Route path="/tasks" element={<Tasks />} />
+                        <Route path="/habits" element={<Habits />} />
+                        <Route path="/goals" element={<Goals />} />
+                        <Route path="/calendar" element={<Calendar />} />
+                        <Route path="/focus" element={<Focus />} />
+                        <Route path="/learning" element={<Learning />} />
+                        <Route path="/journal" element={<Journal />} />
+                        <Route path="/notes" element={<Notes />} />
+                        <Route path="/mood" element={<MoodTracker />} />
+                        <Route path="/finance" element={<Finance />} />
+                        <Route path="/health" element={<Health />} />
+                        <Route path="/relationships" element={<Relationships />} />
+                        <Route path="/collections" element={<Collections />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/settings" element={<Settings />} />
+                    </Route>
+
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Suspense>
+        </Router>
+    );
+}
+
 // === APP CHÍNH ===
 export default function App() {
     return (
         <AuthProvider>
-            <Router>
-                <Suspense
-                    fallback={
-                        <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">
-                            <div className="text-2xl font-medium text-indigo-600">Đang tải trang...</div>
-                        </div>
-                    }
-                >
-                    <Routes>
-                        {/* Trang Login */}
-                        <Route path="/login" element={<LoginPage />} />
-
-                        {/* Tất cả dashboard đều cần đăng nhập */}
-                        <Route
-                            element={
-                                <ProtectedRoute>
-                                    <MainLayout />
-                                </ProtectedRoute>
-                            }
-                        >
-                            <Route path="/" element={<Overview />} />
-                            <Route path="/analytics" element={<Analytics />} />
-                            <Route path="/review" element={<DailyReview />} />
-
-                            <Route path="/tasks" element={<Tasks />} />
-                            <Route path="/habits" element={<Habits />} />
-                            <Route path="/goals" element={<Goals />} />
-                            <Route path="/calendar" element={<Calendar />} />
-                            <Route path="/focus" element={<Focus />} />
-
-                            <Route path="/learning" element={<Learning />} />
-                            <Route path="/journal" element={<Journal />} />
-                            <Route path="/notes" element={<Notes />} />
-                            <Route path="/mood" element={<MoodTracker />} />
-
-                            <Route path="/finance" element={<Finance />} />
-                            <Route path="/health" element={<Health />} />
-                            <Route path="/relationships" element={<Relationships />} />
-                            <Route path="/collections" element={<Collections />} />
-
-                            <Route path="/profile" element={<Profile />} />
-                            <Route path="/settings" element={<Settings />} />
-                        </Route>
-
-                        {/* Redirect tất cả các đường dẫn lạ về home */}
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                </Suspense>
-            </Router>
+            <AppContent />
         </AuthProvider>
     );
 }
