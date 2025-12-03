@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 
 // Import API
-import { loginWithBackend, registerWithBackend } from '../../lib/api.js';
+import { loginWithBackend, registerWithBackend } from '../../lib/api';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);

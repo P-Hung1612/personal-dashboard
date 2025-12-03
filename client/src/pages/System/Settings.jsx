@@ -6,6 +6,10 @@ import {
     Palette, Moon, Sun, Bell, Volume2, Download, Upload,
     Trash2, Sparkles, Save, Zap, Gauge, Check
 } from "lucide-react";
+import { generateDemoData } from '../../utils/GenDemoData.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { saveData } from '../../lib/api.js';
+
 
 const THEMES = {
     purple: "from-purple-600 via-pink-600 to-rose-600",
@@ -26,11 +30,20 @@ const THEME_LABELS = {
 };
 
 export default function Settings() {
+    const { user, userData, setUserData } = useAuth();
     const [theme, setTheme] = useState("purple");
     const [isDark, setIsDark] = useState(false);
     const [notifications, setNotifications] = useState(true);
     const [sound, setSound] = useState(true);
 
+    const handleGenerateDemo = async () => {
+        const demo = generateDemoData();
+        const newData = { ...userData, ...demo, email: user.email };
+        setUserData(newData);
+        await saveData(newData);
+        alert("Đã tạo dữ liệu mẫu thành công!");
+    };
+    
     // Load settings
     useEffect(() => {
         const saved = localStorage.getItem("lifeos-settings");
@@ -118,6 +131,8 @@ export default function Settings() {
                     </p>
                 </div>
             </motion.div>
+
+            <button onClick={handleGenerateDemo}>Tạo dữ liệu mẫu</button>
 
             <div className="p-8 lg:p-12 max-w-7xl mx-auto space-y-12">
                 {/* THEME SELECTION */}

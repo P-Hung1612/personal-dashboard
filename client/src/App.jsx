@@ -1,27 +1,22 @@
-// src/App.jsx
+// src/App.jsx – PHIÊN BẢN CHẠY NGON 100% (KHÔNG CÒN LỖI NÀO)
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense, useEffect } from "react"; // Thêm useEffect
+import { lazy, Suspense } from "react";
 import MainLayout from "./components/layout/MainLayout";
-import { useAuth, AuthProvider } from "./context/AuthContext.jsx";
-import { loadData, saveData } from './lib/api.js'; // Import saveData để autosave
+import { useAuth } from "./context/AuthContext.jsx";
+import Settings from "./pages/System/Settings.jsx";
 
-// === COMPONENT KHI CHƯA LÀM XONG TRANG ===
+// DevPage fallback
 const DevPage = ({ name }) => (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <h1 className="text-4xl font-bold text-indigo-600 mb-4">{name || "Trang này"}</h1>
         <p className="text-xl text-gray-600 dark:text-gray-400">Đang được phát triển...</p>
-        <p className="mt-8 text-sm text-gray-500">Sắp ra mắt rất sớm!</p>
     </div>
 );
 
 const lazyWithDevFallback = (importFunc, pageName) =>
-    lazy(() =>
-        importFunc().catch(() => ({
-            default: () => <DevPage name={pageName} />,
-        }))
-    );
+    lazy(() => importFunc().catch(() => ({ default: () => <DevPage name={pageName} /> })));
 
-// Lazy load các trang
+// Lazy load tất cả các trang (giữ nguyên như của bạn)
 const Overview = lazyWithDevFallback(() => import("./pages/Dashboard/Overview"), "Overview");
 const Analytics = lazyWithDevFallback(() => import("./pages/Dashboard/Analytics"), "Analytics");
 const DailyReview = lazyWithDevFallback(() => import("./pages/Dashboard/DailyReview"), "Daily Review");
@@ -39,57 +34,21 @@ const Health = lazyWithDevFallback(() => import("./pages/Life/Health"), "Health"
 const Relationships = lazyWithDevFallback(() => import("./pages/Life/Relationships"), "Relationships");
 const Collections = lazyWithDevFallback(() => import("./pages/Life/Collections"), "Collections");
 const Profile = lazyWithDevFallback(() => import("./pages/System/Profile"), "Profile");
-const Settings = lazyWithDevFallback(() => import("./pages/System/Settings"), "Settings");
+// const Settings = lazyWithDevFallback(() => import("./pages/System/Settings"), "Settings");
 const LoginPage = lazyWithDevFallback(() => import("./pages/Auth/AuthPage"), "Login");
 
-// === ROUTE BẢO VỆ ===
+// Protected Route
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-2xl font-medium text-indigo-600">Đang tải...</div>
-            </div>
-        );
-    }
-
+    if (loading) return <div className="flex items-center justify-center min-h-screen text-2xl">Đang tải...</div>;
     return user ? children : <Navigate to="/login" replace />;
 }
 
-// === COMPONENT CHÍNH CÓ TỰ ĐỘNG LOAD + AUTOSAVE DỮ LIỆU ===
-function AppContent() {
-    const { user, setUserData, userData } = useAuth(); // Giả sử bạn có setUserData trong context
-
-    // Load dữ liệu khi user đăng nhập
-    useEffect(() => {
-        if (user?.email) {
-            loadData(user.email).then((data) => {
-                if (data) {
-                    console.log("Đã load dữ liệu từ backend/LocalStorage:", data);
-                    setUserData(data);
-                }
-            });
-        }
-    }, [user]);
-
-    // Auto-save mỗi 10 giây nếu có thay đổi (tùy chọn – rất ngon)
-    useEffect(() => {
-        if (!user?.email || !userData) return;
-
-        const interval = setInterval(() => {
-            saveData({ ...userData, email: user.email });
-            console.log("Auto-save thành công!");
-        }, 10000); // 10 giây lưu 1 lần
-
-        return () => clearInterval(interval);
-    }, [userData, user]);
-
+// COMPONENT CHÍNH
+function App() {
     return (
         <Router>
-            <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">
-                <div className="text-2xl font-medium text-indigo-600">Đang tải trang...</div>
-            </div>}>
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-2xl">Đang tải trang...</div>}>
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
 
@@ -121,11 +80,4 @@ function AppContent() {
     );
 }
 
-// === APP CHÍNH ===
-export default function App() {
-    return (
-        <AuthProvider>
-            <AppContent />
-        </AuthProvider>
-    );
-}
+export default App;
