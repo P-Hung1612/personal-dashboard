@@ -3,13 +3,23 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-    Palette, Moon, Sun, Bell, Volume2, Download, Upload,
-    Trash2, Sparkles, Save, Zap, Gauge, Check
+    Palette,
+    Moon,
+    Sun,
+    Bell,
+    Volume2,
+    Download,
+    Upload,
+    Trash2,
+    Sparkles,
+    Save,
+    Zap,
+    Gauge,
+    Check,
 } from "lucide-react";
-import { generateDemoData } from '../../utils/GenDemoData.js';
-import { useAuth } from '../../context/AuthContext.jsx';
-import { saveData } from '../../lib/api.js';
-
+import { generateDemoData } from "../../utils/GenDemoData.js";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { saveData } from "../../services/data.api.js";
 
 const THEMES = {
     purple: "from-purple-600 via-pink-600 to-rose-600",
@@ -43,7 +53,7 @@ export default function Settings() {
         await saveData(newData);
         alert("Đã tạo dữ liệu mẫu thành công!");
     };
-    
+
     // Load settings
     useEffect(() => {
         const saved = localStorage.getItem("lifeos-settings");
@@ -74,13 +84,18 @@ export default function Settings() {
         const data = {};
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key?.startsWith("lifeos-")) data[key] = localStorage.getItem(key);
+            if (key?.startsWith("lifeos-"))
+                data[key] = localStorage.getItem(key);
         }
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: "application/json",
+        });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `LifeOS-backup-${new Date().toISOString().split("T")[0]}.json`;
+        a.download = `LifeOS-backup-${
+            new Date().toISOString().split("T")[0]
+        }.json`;
         a.click();
     };
 
@@ -91,7 +106,9 @@ export default function Settings() {
         reader.onload = (ev) => {
             try {
                 const data = JSON.parse(ev.target.result);
-                Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
+                Object.keys(data).forEach((k) =>
+                    localStorage.setItem(k, data[k])
+                );
                 alert("Khôi phục thành công! Đang reload...");
                 setTimeout(() => location.reload(), 1000);
             } catch {
@@ -120,14 +137,22 @@ export default function Settings() {
                     <div className="flex items-center gap-6 mb-6">
                         <Sparkles className="w-16 h-16 lg:w-20 lg:h-20 drop-shadow-2xl animate-pulse" />
                         <div>
-                            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">Cài đặt</h1>
+                            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">
+                                Cài đặt
+                            </h1>
                             <p className="text-xl lg:text-2xl opacity-95 mt-3 font-medium">
-                                {new Date().toLocaleDateString("vi-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                                {new Date().toLocaleDateString("vi-VN", {
+                                    weekday: "long",
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                })}
                             </p>
                         </div>
                     </div>
                     <p className="text-lg lg:text-xl opacity-90 max-w-4xl ml-24">
-                        Tùy chỉnh LifeOS để nó thực sự là của bạn – màu sắc, cảm xúc, phong cách.
+                        Tùy chỉnh LifeOS để nó thực sự là của bạn – màu sắc, cảm
+                        xúc, phong cách.
                     </p>
                 </div>
             </motion.div>
@@ -152,8 +177,11 @@ export default function Settings() {
                                 whileHover={{ scale: 1.08 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setTheme(key)}
-                                className={`relative h-32 rounded-3xl bg-gradient-to-br ${gradient} shadow-2xl transition-all ${theme === key ? "ring-8 ring-white/50 scale-110 shadow-purple-500/50" : ""
-                                    }`}
+                                className={`relative h-32 rounded-3xl bg-gradient-to-br ${gradient} shadow-2xl transition-all ${
+                                    theme === key
+                                        ? "ring-8 ring-white/50 scale-110 shadow-purple-500/50"
+                                        : ""
+                                }`}
                             >
                                 <div className="absolute inset-0 rounded-3xl bg-black/20 backdrop-blur-sm flex items-center justify-center">
                                     <p className="text-2xl font-bold text-white drop-shadow-lg">
@@ -185,10 +213,18 @@ export default function Settings() {
                         >
                             <motion.div
                                 animate={{ x: isDark ? 130 : -130 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                transition={{
+                                    type: "spring",
+                                    stiffness: 300,
+                                    damping: 30,
+                                }}
                                 className="absolute inset-0 flex items-center justify-center"
                             >
-                                {isDark ? <Moon className="w-24 h-24 text-yellow-400" /> : <Sun className="w-24 h-24 text-yellow-500" />}
+                                {isDark ? (
+                                    <Moon className="w-24 h-24 text-yellow-400" />
+                                ) : (
+                                    <Sun className="w-24 h-24 text-yellow-500" />
+                                )}
                             </motion.div>
                             <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-2xl font-bold">
                                 {isDark ? "Dark Mode" : "Light Mode"}
@@ -210,7 +246,9 @@ export default function Settings() {
                             <input
                                 type="checkbox"
                                 checked={notifications}
-                                onChange={e => setNotifications(e.target.checked)}
+                                onChange={(e) =>
+                                    setNotifications(e.target.checked)
+                                }
                                 className="w-14 h-14 rounded-xl accent-purple-600"
                             />
                         </label>
@@ -219,7 +257,7 @@ export default function Settings() {
                             <input
                                 type="checkbox"
                                 checked={sound}
-                                onChange={e => setSound(e.target.checked)}
+                                onChange={(e) => setSound(e.target.checked)}
                                 className="w-14 h-14 rounded-xl accent-purple-600"
                             />
                         </label>
@@ -242,13 +280,22 @@ export default function Settings() {
                             className="p-10 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-3xl shadow-2xl hover:shadow-emerald-500/50 flex flex-col items-center gap-4 hover:scale-105 transition"
                         >
                             <Download className="w-16 h-16" />
-                            <span className="text-2xl font-bold">Backup toàn bộ</span>
+                            <span className="text-2xl font-bold">
+                                Backup toàn bộ
+                            </span>
                         </button>
 
                         <label className="p-10 bg-gradient-to-br from-blue-500 to-cyan-600 text-white rounded-3xl shadow-2xl hover:shadow-cyan-500/50 flex flex-col items-center gap-4 cursor-pointer hover:scale-105 transition">
                             <Upload className="w-16 h-16" />
-                            <span className="text-2xl font-bold">Khôi phục</span>
-                            <input type="file" accept=".json" onChange={importAllData} className="hidden" />
+                            <span className="text-2xl font-bold">
+                                Khôi phục
+                            </span>
+                            <input
+                                type="file"
+                                accept=".json"
+                                onChange={importAllData}
+                                className="hidden"
+                            />
                         </label>
 
                         <button
@@ -256,7 +303,9 @@ export default function Settings() {
                             className="p-10 bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-3xl shadow-2xl hover:shadow-red-500/50 flex flex-col items-center gap-4 hover:scale-105 transition"
                         >
                             <Trash2 className="w-16 h-16" />
-                            <span className="text-2xl font-bold">Xóa tất cả</span>
+                            <span className="text-2xl font-bold">
+                                Xóa tất cả
+                            </span>
                         </button>
                     </div>
                 </motion.div>
@@ -276,9 +325,11 @@ export default function Settings() {
 
                 {/* Easter Egg */}
                 <div className="text-center text-gray-500 dark:text-gray-400 pb-20">
-                    <p className="text-xl opacity-70">LifeOS v1.0 • Made with blood, sweat & love in Việt Nam</p>
+                    <p className="text-xl opacity-70">
+                        LifeOS v1.0 • Made with blood, sweat & love in Việt Nam
+                    </p>
                 </div>
             </div>
         </>
     );
-};
+}

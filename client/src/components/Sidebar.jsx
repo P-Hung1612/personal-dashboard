@@ -15,7 +15,7 @@ export default function Sidebar() {
     const triggerRefs = useRef({});
 
     const handleToggleSidebar = () => {
-        setIsCollapsed(prev => !prev);
+        setIsCollapsed((prev) => !prev);
         setHoverSection(null);
     };
 
@@ -62,6 +62,7 @@ export default function Sidebar() {
             items: [
                 { path: "/profile", label: "Profile", icon: "👤" },
                 { path: "/settings", label: "Settings", icon: "⚙️" },
+                { path: "/init", label: "InitData", icon: "⚙️" },
             ],
         },
     ];
@@ -69,7 +70,7 @@ export default function Sidebar() {
     // const user = {
     //     name: "Phuoc Hung",
     //     email: "phuochung@example.com",
-    //     avatar: "https://i.pravatar.cc/100?img=12",        
+    //     avatar: "https://i.pravatar.cc/100?img=12",
     // };
 
     const { user, logout } = useAuth();
@@ -96,12 +97,25 @@ export default function Sidebar() {
                                     <>
                                         <button
                                             onClick={() =>
-                                                setOpenSection(openSection === group.section ? "" : group.section)
+                                                setOpenSection(
+                                                    openSection ===
+                                                        group.section
+                                                        ? ""
+                                                        : group.section
+                                                )
                                             }
                                             className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-widest text-gray-600 hover:text-indigo-600 mb-2"
                                         >
                                             <span>{group.section}</span>
-                                            <motion.span animate={{ rotate: openSection === group.section ? 90 : 0 }}>
+                                            <motion.span
+                                                animate={{
+                                                    rotate:
+                                                        openSection ===
+                                                        group.section
+                                                            ? 90
+                                                            : 0,
+                                                }}
+                                            >
                                                 <ChevronRight size={14} />
                                             </motion.span>
                                         </button>
@@ -109,24 +123,46 @@ export default function Sidebar() {
                                         <AnimatePresence>
                                             {openSection === group.section && (
                                                 <motion.ul
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: "auto", opacity: 1 }}
-                                                    exit={{ height: 0, opacity: 0 }}
+                                                    initial={{
+                                                        height: 0,
+                                                        opacity: 0,
+                                                    }}
+                                                    animate={{
+                                                        height: "auto",
+                                                        opacity: 1,
+                                                    }}
+                                                    exit={{
+                                                        height: 0,
+                                                        opacity: 0,
+                                                    }}
                                                     className="space-y-1 pl-2"
                                                 >
                                                     {group.items.map((item) => {
-                                                        const isActive = location.pathname === item.path;
+                                                        const isActive =
+                                                            location.pathname ===
+                                                            item.path;
                                                         return (
                                                             <li key={item.path}>
                                                                 <Link
-                                                                    to={item.path}
-                                                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${isActive
-                                                                        ? "bg-indigo-100 text-indigo-600 font-medium"
-                                                                        : "hover:bg-gray-100 text-gray-700"
-                                                                        }`}
+                                                                    to={
+                                                                        item.path
+                                                                    }
+                                                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                                                                        isActive
+                                                                            ? "bg-indigo-100 text-indigo-600 font-medium"
+                                                                            : "hover:bg-gray-100 text-gray-700"
+                                                                    }`}
                                                                 >
-                                                                    <span className="text-lg">{item.icon}</span>
-                                                                    <span>{item.label}</span>
+                                                                    <span className="text-lg">
+                                                                        {
+                                                                            item.icon
+                                                                        }
+                                                                    </span>
+                                                                    <span>
+                                                                        {
+                                                                            item.label
+                                                                        }
+                                                                    </span>
                                                                 </Link>
                                                             </li>
                                                         );
@@ -140,25 +176,34 @@ export default function Sidebar() {
                                 {/* Khi thu gọn */}
                                 {isCollapsed && (
                                     <div
-                                        ref={(el) => (triggerRefs.current[group.section] = el)}
+                                        ref={(el) =>
+                                            (triggerRefs.current[
+                                                group.section
+                                            ] = el)
+                                        }
                                         className="relative group"
                                     >
                                         {/* ICON */}
                                         <div
                                             className="flex flex-col items-center p-4 hover:bg-gray-100 rounded-xl cursor-pointer transition-all"
-                                            onMouseEnter={() => setHoverSection(group.section)}
+                                            onMouseEnter={() =>
+                                                setHoverSection(group.section)
+                                            }
                                         >
-                                            <span className="text-3xl">{group.items[0].icon}</span>
+                                            <span className="text-3xl">
+                                                {group.items[0].icon}
+                                            </span>
                                         </div>
 
                                         {/* CẦU NỐI — GIỮ HOVER KHI RÊ CHUỘT QUA */}
                                         <div
                                             className="absolute inset-y-0 left-full w-12 bg-transparent"
-                                            onMouseEnter={() => setHoverSection(group.section)}
+                                            onMouseEnter={() =>
+                                                setHoverSection(group.section)
+                                            }
                                         />
                                     </div>
                                 )}
-
                             </div>
                         ))}
                     </div>
@@ -167,20 +212,31 @@ export default function Sidebar() {
                 {/* Collapse + avatar */}
                 <div>
                     <div className="flex justify-end mb-4">
-                        <button onClick={handleToggleSidebar} className="p-2 hover:bg-gray-100 rounded-lg">
+                        <button
+                            onClick={handleToggleSidebar}
+                            className="p-2 hover:bg-gray-100 rounded-lg"
+                        >
                             <Menu size={22} />
                         </button>
                     </div>
 
                     <div
-                        className={`flex items-center gap-3 border-t border-gray-200 mb-14 pt-4 ${isCollapsed ? "justify-center" : ""
-                            }`}
+                        className={`flex items-center gap-3 border-t border-gray-200 mb-14 pt-4 ${
+                            isCollapsed ? "justify-center" : ""
+                        }`}
                     >
-                        <img src={user.avatar} className="w-10 h-10 rounded-full object-cover" />
+                        <img
+                            src={user.avatar}
+                            className="w-10 h-10 rounded-full object-cover"
+                        />
                         {!isCollapsed && (
                             <div>
-                                <div className="text-sm font-medium">{user.name}</div>
-                                <div className="text-xs text-gray-500">{user.email}</div>
+                                <div className="text-sm font-medium">
+                                    {user.name}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                    {user.email}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -198,7 +254,10 @@ export default function Sidebar() {
                         transition={{ duration: 0.22, ease: "easeOut" }}
                         className="fixed left-20 z-[999999] pointer-events-none"
                         style={{
-                            top: triggerRefs.current[hoverSection]?.getBoundingClientRect()?.top ?? 100,
+                            top:
+                                triggerRefs.current[
+                                    hoverSection
+                                ]?.getBoundingClientRect()?.top ?? 100,
                         }}
                         onMouseEnter={() => setHoverSection(hoverSection)}
                         onMouseLeave={() => setHoverSection(null)}
@@ -212,19 +271,27 @@ export default function Sidebar() {
                                 {menu
                                     .find((g) => g.section === hoverSection)
                                     ?.items.map((item) => {
-                                        const isActive = location.pathname === item.path;
+                                        const isActive =
+                                            location.pathname === item.path;
                                         return (
                                             <Link
                                                 key={item.path}
                                                 to={item.path}
-                                                onClick={() => setHoverSection(null)}
-                                                className={`flex items-center gap-4 px-5 py-3.5 rounded-xl transition-all ${isActive
-                                                    ? "bg-indigo-100 text-indigo-600 font-semibold shadow-sm"
-                                                    : "hover:bg-gray-100 text-gray-700"
-                                                    }`}
+                                                onClick={() =>
+                                                    setHoverSection(null)
+                                                }
+                                                className={`flex items-center gap-4 px-5 py-3.5 rounded-xl transition-all ${
+                                                    isActive
+                                                        ? "bg-indigo-100 text-indigo-600 font-semibold shadow-sm"
+                                                        : "hover:bg-gray-100 text-gray-700"
+                                                }`}
                                             >
-                                                <span className="text-2xl">{item.icon}</span>
-                                                <span className="text-base">{item.label}</span>
+                                                <span className="text-2xl">
+                                                    {item.icon}
+                                                </span>
+                                                <span className="text-base">
+                                                    {item.label}
+                                                </span>
                                             </Link>
                                         );
                                     })}
